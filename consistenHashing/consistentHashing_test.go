@@ -37,7 +37,7 @@ func getKeysShouldBe(nodes []*node.Node) []string {
 }
 
 func addJob(task chan *node.Node, complete chan *node.Node, ring *Ring, nodes []*node.Node) {
-	go ring.Add((<-chan *node.Node)(task), (chan<- *node.Node)(complete))
+	go ring.AddAsync((<-chan *node.Node)(task), (chan<- *node.Node)(complete))
 	for _, node := range nodes {
 		task <- node
 		<-complete
@@ -45,7 +45,7 @@ func addJob(task chan *node.Node, complete chan *node.Node, ring *Ring, nodes []
 }
 
 func removeJob(task chan *node.Node, complete chan *node.Node, ring *Ring, nodes []*node.Node) {
-	go ring.Remove((<-chan *node.Node)(task), (chan<- *node.Node)(complete))
+	go ring.RemoveAsync((<-chan *node.Node)(task), (chan<- *node.Node)(complete))
 	for _, node := range nodes {
 		task <- node
 		<-complete

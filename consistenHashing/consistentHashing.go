@@ -29,7 +29,7 @@ func NewRing() (ring *Ring) {
 // @param addChan: incoming channel of Node pointer
 // @param complete: outgoing channel of Node pointer, indicating
 //                   which Node has been added
-func (ring *Ring) Add(addChan <-chan *node.Node, complete chan<- *node.Node) {
+func (ring *Ring) AddAsync(addChan <-chan *node.Node, complete chan<- *node.Node) {
 	for {
 		node := <-addChan
 		keys := node.Keys
@@ -49,7 +49,7 @@ func (ring *Ring) Add(addChan <-chan *node.Node, complete chan<- *node.Node) {
 // @param removeChan: incoming channel of Node pointer
 // @param complete: outgoing channel of Node pointer, indicating
 //                  which Node has been removed
-func (ring *Ring) Remove(removeChan <-chan *node.Node, complete chan<- *node.Node) {
+func (ring *Ring) RemoveAsync(removeChan <-chan *node.Node, complete chan<- *node.Node) {
 	for {
 		node := <-removeChan
 		keys := node.Keys
