@@ -97,7 +97,7 @@ func (ring *Ring) RemoveAsync(removeChan <-chan *node.Node, complete chan<- *nod
 }
 
 // Lookup for a Node in consistent hashing ring.
-// This function is actually redirected to NextOf
+// This function is actually redirected to Successor
 //
 // @param key: string of key
 // @return: return the node if such successor founded, otherwise an error is
@@ -123,14 +123,22 @@ func (ring *Ring) LookUp(key string) (*node.Node, error) {
 	return ring.Tree.Values()[index].(*node.Node), nil
 }
 
-// Given a key on consistent hashing ring, it returns the nearest successor
-// of this key.
+// Get successor of a given key(this key is supposed to belong to a Node)
 //
 // @param key: string of key
 // @return: return the node if such successor founded, otherwise an error is
 //          given
-func (ring *Ring) NextOf(key string) (*node.Node, error) {
+func (ring *Ring) Successor(key string) (*node.Node, error) {
 	return ring.LookUp(AddOne(key))
+}
+
+// Get predecessor of a given key(this key is supposed to belong to a Node)
+//
+// @param key: string of key
+// @return: return the node if such predecessor founded, otherwise an error is
+//          given
+func (ring *Ring) Predeccessor(key string) (*node.Node, error) {
+	return ring.LookUp(SubOne(key))
 }
 
 //Add key by one, the key is usually a very large number, mixing

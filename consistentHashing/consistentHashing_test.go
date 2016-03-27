@@ -202,9 +202,9 @@ func TestLookUp2(t *testing.T) {
 	}
 }
 
-//NextOf(key) is equivallent to
+//Successor(key) is equivallent to
 //LookUp(newKey) where newKey = key+1
-func TestNextOf(t *testing.T) {
+func TestSuccessor(t *testing.T) {
 	ring := NewRing()
 	nodes := createNodes()
 	addNodesToTree(ring, nodes)
@@ -212,7 +212,7 @@ func TestNextOf(t *testing.T) {
 
 	for _, key := range keysShouldBe {
 		node, _ := ring.LookUp(AddOne(key))
-		node2, _ := ring.NextOf(key)
+		node2, _ := ring.Successor(key)
 		assert.Equal(t, node, node2)
 	}
 }

@@ -66,10 +66,18 @@ func main() {
 	fmt.Println(n1 == n2, n1 == n3, n1 == nodes[1])
 
 	//given a key string, get successor of this node
-	succ, _ := ring.NextOf("97c1af2272de15532b1483651b715129332f8406")
+	succ, _ := ring.Successor("97c1af2272de15532b1483651b715129332f8406")
 	fmt.Println(succ == nodes[2])
-	succ, _ = ring.NextOf("7260a48008fb01d884067d8e50b64ac56b9c3221")
+	succ, _ = ring.Successor("7260a48008fb01d884067d8e50b64ac56b9c3221")
 	fmt.Println(succ == nodes[1])
-	succ, _ = ring.NextOf("eb102fa9386db4715c2cfc93d019ca21c194b767")
+	succ, _ = ring.Successor("eb102fa9386db4715c2cfc93d019ca21c194b767")
 	fmt.Println(succ == nodes[1])
+
+	//only when there is no node in the ring, the look up will fail
+	//notice you should check this error field, since it is possible
+	//for the consistent hashing to be empty
+	ring.RemoveSync(nodes[1])
+	ring.RemoveSync(nodes[2])
+	_, err := ring.LookUp("97c1af2272de15532b1483651b715129332f8406")
+	fmt.Println(err)
 }
