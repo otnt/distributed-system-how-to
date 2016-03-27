@@ -96,8 +96,9 @@ func (ring *Ring) RemoveAsync(removeChan <-chan *node.Node, complete chan<- *nod
 	close(complete)
 }
 
-// Lookup for a Node in consistent hashing ring.
-// This function is actually redirected to Successor
+// Lookup for a Node in consistent hashing ring given a key.
+// If the input key is the same as some Node's key, then the result is
+// that exact Node.
 //
 // @param key: string of key
 // @return: return the node if such successor founded, otherwise an error is
