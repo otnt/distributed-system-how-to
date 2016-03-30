@@ -15,7 +15,13 @@ type Node struct {
 	//Key is the position on consistent hashing, because key is usually extremely
 	//large(e.g. 2^160) to reduce confliction, it should be a string.
 	//Also, notice we are using virtual node, so one node is actually mapped
-	//to several places on the ring.
+	//to several places on the ring. To do this, we append several number(depends on
+	//user configuration) at end of uuid
+	//e.g. If replication number is 3, uuid is 127.0.0.1:8080
+	//then we have tree keys:
+	//sha1('127.0.0.1:8080-0')
+	//sha1('127.0.0.1:8080-1')
+	//sha1('127.0.0.1:8080-2')
 	Keys []string
 
 	//when the membership protocol knows consistent hashing has

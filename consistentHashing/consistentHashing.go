@@ -3,16 +3,16 @@ package consistentHashing
 import (
 	"errors"
 	//"fmt"
+	rbte "github.com/emirpasic/gods/examples"
 	rbt "github.com/emirpasic/gods/trees/redblacktree"
 	"github.com/otnt/distributed-system-how-to/node"
-	"sort"
 	"sync"
 )
 
 //The abstruct structure of consistent hash ring.
 //It consists of a Red-Black-Tree serve as the ring.
 type Ring struct {
-	Tree *rbt.Tree
+	tree *rbte.RedBlackTreeExtended
 	mux  sync.Mutex
 }
 
@@ -21,8 +21,11 @@ type Ring struct {
 //
 //@return: pointer to new created consistent hashing ring
 func NewRing() (ring *Ring) {
-	ring = &Ring{}
-	ring.Tree = rbt.NewWithStringComparator()
+	ring = &Ring{
+		tree: &rbte.RedBlackTreeExtended{
+			rbt.NewWithStringComparator(),
+		},
+	}
 	return
 }
 
@@ -34,7 +37,7 @@ func NewRing() (ring *Ring) {
 func (ring *Ring) AddSync(node *node.Node) {
 	ring.mux.Lock()
 	for _, key := range node.Keys {
-		ring.Tree.Put(key, node)
+		ring.tree.Put(key, node)
 	}
 	ring.mux.Unlock()
 
@@ -49,7 +52,7 @@ func (ring *Ring) AddSync(node *node.Node) {
 func (ring *Ring) RemoveSync(node *node.Node) {
 	ring.mux.Lock()
 	for _, key := range node.Keys {
-		ring.Tree.Remove(key)
+		ring.tree.Remove(key)
 	}
 	ring.mux.Unlock()
 
@@ -67,7 +70,7 @@ func (ring *Ring) AddAsync(addChan <-chan *node.Node, complete chan<- *node.Node
 
 		ring.mux.Lock()
 		for _, key := range keys {
-			ring.Tree.Put(key, node)
+			ring.tree.Put(key, node)
 		}
 		ring.mux.Unlock()
 
@@ -87,7 +90,7 @@ func (ring *Ring) RemoveAsync(removeChan <-chan *node.Node, complete chan<- *nod
 
 		ring.mux.Lock()
 		for _, key := range keys {
-			ring.Tree.Remove(key)
+			ring.tree.Remove(key)
 		}
 		ring.mux.Unlock()
 
@@ -104,24 +107,7 @@ func (ring *Ring) RemoveAsync(removeChan <-chan *node.Node, complete chan<- *nod
 // @return: return the node if such successor founded, otherwise an error is
 //          given
 func (ring *Ring) LookUp(key string) (*node.Node, error) {
-	size := ring.Tree.Size()
-	if size == 0 {
-		return &node.Node{}, errors.New("No node alive")
-
-	}
-
-	interfaceSlice := ring.Tree.Keys()
-	keys := make([]string, size)
-	for i := range keys {
-		keys[i] = interfaceSlice[i].(string)
-	}
-
-	index := sort.SearchStrings(keys, key)
-	if index == size {
-		index = 0
-	}
-
-	return ring.Tree.Values()[index].(*node.Node), nil
+	return ring.getCeilingOf(key)
 }
 
 // Get successor of a given key(this key is supposed to belong to a Node)
@@ -130,7 +116,7 @@ func (ring *Ring) LookUp(key string) (*node.Node, error) {
 // @return: return the node if such successor founded, otherwise an error is
 //          given
 func (ring *Ring) Successor(key string) (*node.Node, error) {
-	return ring.LookUp(AddOne(key))
+	return ring.getCeilingOf(AddOne(key))
 }
 
 // Get predecessor of a given key(this key is supposed to belong to a Node)
@@ -138,8 +124,100 @@ func (ring *Ring) Successor(key string) (*node.Node, error) {
 // @param key: string of key
 // @return: return the node if such predecessor founded, otherwise an error is
 //          given
-func (ring *Ring) Predeccessor(key string) (*node.Node, error) {
-	return ring.LookUp(SubOne(key))
+func (ring *Ring) Predecessor(key string) (*node.Node, error) {
+	return ring.getFloorOf(SubOne(key))
+}
+
+// Get a Node given a specific key.
+//
+// @param key: string of key
+// @return: if key exists in tree, return the node and true, otherwise return
+//          return nil and false
+func (ring *Ring) Get(key string) (*node.Node, bool) {
+	if treeNodeValue, found := ring.tree.Get(key); found {
+		return treeNodeValue.(*node.Node), found
+	} else {
+		return nil, found
+	}
+}
+
+// Check if the ring is empty/no node alive
+//
+// @return: true if ring is empty otherwise false
+func (ring *Ring) Empty() bool {
+	return ring.tree.Empty()
+}
+
+// Get all keys in the ring in ascending order
+//
+// @return: all keys in ascending order
+func (ring *Ring) Keys() []string {
+	interfaceKeys := ring.tree.Keys()
+	keys := make([]string, len(interfaceKeys))
+	for i, _ := range keys {
+		keys[i] = interfaceKeys[i].(string)
+	}
+	return keys
+}
+
+// Get all values in the ring corresponding to the keys in ascending order
+//
+// @return: all values in the ring corresponding to the keys in ascending order
+func (ring *Ring) Values() []*node.Node {
+	interfaceValues := ring.tree.Values()
+	values := make([]*node.Node, len(interfaceValues))
+	for i, _ := range values {
+		values[i] = interfaceValues[i].(*node.Node)
+	}
+	return values
+}
+
+// Get Ceiling of a key. A Ceiling is defined as the smallest element of all
+// elements that are larger than or equal to the key. In consistent hashing, the ceiling
+// of an element that is larger than any exist key, is the smallest key, indicating
+// the ring property.
+//
+// @param key: string of key
+// @return: return the node if tree is not empty, otherwise an error is
+//          given
+func (ring *Ring) getCeilingOf(key string) (*node.Node, error) {
+	size := ring.tree.Size()
+	if size == 0 {
+		return &node.Node{}, errors.New("No node alive")
+	}
+
+	// find ceiling of this key
+	if treeNode, found := ring.tree.Ceiling(key); found {
+		return treeNode.Value.(*node.Node), nil
+	} else {
+		// Or it may be winded back to zero
+		minTreeNodeValue, _ := ring.tree.GetMin()
+		return minTreeNodeValue.(*node.Node), nil
+	}
+}
+
+// Get Floor of a key. A Floor is defined as the largest element of all
+// elements that are smaller than or equal to the key. In consistent hashing, the floor
+// of an element that is smaller than any exist key, is the largest key, indicating
+// the ring property.
+//
+// @param key: string of key
+// @return: return the node if tree is not empty, otherwise an error is
+//          given
+func (ring *Ring) getFloorOf(key string) (*node.Node, error) {
+	size := ring.tree.Size()
+	if size == 0 {
+		return &node.Node{}, errors.New("No node alive")
+	}
+
+	// find floor of this key
+	if treeNode, found := ring.tree.Floor(key); found {
+		return treeNode.Value.(*node.Node), nil
+	} else {
+		// Or it may be winded back to zero
+		maxTreeNodeValue, _ := ring.tree.GetMax()
+		return maxTreeNodeValue.(*node.Node), nil
+	}
 }
 
 //Add key by one, the key is usually a very large number, mixing

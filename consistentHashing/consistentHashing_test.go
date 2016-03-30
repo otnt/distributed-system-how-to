@@ -96,7 +96,7 @@ func TestAddNodeAsync(t *testing.T) {
 	addNodesToTreeAsync(task, complete, ring, nodes)
 
 	keysShouldBe := getKeysShouldBe(nodes)
-	keysInTree := getKeysActuallyAre(ring.Tree)
+	keysInTree := ring.Keys()
 
 	assert.Equal(t, keysShouldBe, keysInTree, "Keys should be the same")
 }
@@ -113,7 +113,7 @@ func TestRemoveNodeAsync(t *testing.T) {
 	removeNodesFromTreeAsync(task, complete, ring, nodesToRemove)
 
 	keysShouldBe := getKeysShouldBe(nodesAfterRemove)
-	keysInTree := getKeysActuallyAre(ring.Tree)
+	keysInTree := ring.Keys()
 
 	assert.Equal(t, keysShouldBe, keysInTree, "Keys should be the same")
 }
@@ -125,7 +125,7 @@ func TestAddNodeSync(t *testing.T) {
 	addNodesToTree(ring, nodes)
 
 	keysShouldBe := getKeysShouldBe(nodes)
-	keysInTree := getKeysActuallyAre(ring.Tree)
+	keysInTree := ring.Keys()
 
 	assert.Equal(t, keysShouldBe, keysInTree, "Keys should be the same")
 }
@@ -141,7 +141,7 @@ func TestRemoveNodeSync(t *testing.T) {
 	removeNodesFromTree(ring, nodesToRemove)
 
 	keysShouldBe := getKeysShouldBe(nodesAfterRemove)
-	keysInTree := getKeysActuallyAre(ring.Tree)
+	keysInTree := ring.Keys()
 
 	assert.Equal(t, keysShouldBe, keysInTree, "Keys should be the same")
 }
@@ -202,17 +202,51 @@ func TestLookUp2(t *testing.T) {
 	}
 }
 
-//Successor(key) is equivallent to
-//LookUp(newKey) where newKey = key+1
+//Find successor of a node given the node's key
 func TestSuccessor(t *testing.T) {
 	ring := NewRing()
 	nodes := createNodes()
 	addNodesToTree(ring, nodes)
 	keysShouldBe := getKeysShouldBe(nodes)
 
-	for _, key := range keysShouldBe {
-		node, _ := ring.LookUp(AddOne(key))
-		node2, _ := ring.Successor(key)
+	for i, _ := range keysShouldBe {
+		node, _ := ring.Successor(keysShouldBe[i])
+		node2, _ := ring.Get(keysShouldBe[(i+1)%len(keysShouldBe)])
 		assert.Equal(t, node, node2)
+	}
+}
+
+//Find predecessor of a node given the node's key
+func TestPredecessor(t *testing.T) {
+	ring := NewRing()
+	nodes := createNodes()
+	addNodesToTree(ring, nodes)
+	keysShouldBe := getKeysShouldBe(nodes)
+
+	for i, _ := range keysShouldBe {
+		node, _ := ring.Predecessor(keysShouldBe[i])
+		node2, _ := ring.Get(keysShouldBe[(i-1+len(keysShouldBe))%len(keysShouldBe)])
+		assert.Equal(t, node, node2)
+	}
+}
+
+//Initially is empty
+func TestEmpty(t *testing.T) {
+	ring := NewRing()
+	assert.True(t, ring.Empty())
+}
+
+//Keys and Values are match
+func TestKeysValuesMatch(t *testing.T) {
+	ring := NewRing()
+	nodes := createNodes()
+	addNodesToTree(ring, nodes)
+
+	keys := ring.Keys()
+	values := ring.Values()
+
+	for i, key := range keys {
+		value, _ := ring.Get(key)
+		assert.Equal(t, values[i], value)
 	}
 }
