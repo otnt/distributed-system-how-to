@@ -26,9 +26,7 @@ One communication model is message passing model. So that machine $A$ talks with
 
 In message passing model, all jobs happend could be put to three categories.
 
-![Message Passing Model](https://raw.githubusercontent.com/otnt/distributed-system-notes/master/clockService/img/send_receive_event.png "Massage Passing Model")
-
-<a href="url"><img src="https://raw.githubusercontent.com/otnt/distributed-system-notes/master/clockService/img/send_receive_event.png" align="left" width="400" alt="Message Passing Model"></a>
+<div><img src="https://raw.githubusercontent.com/otnt/distributed-system-notes/master/clockService/img/send_receive_event.png" align="right" width="400" alt="Message Passing Model"></div>
 
 1. **Send**: Machine $A$ sends a message to machine $B$.
 2. **Receive**: Machine $A$ receives a message from machine $B$.
