@@ -68,11 +68,13 @@ For example, in right image, even network between A and C is conjusted, so that 
 #### Pros and Cons
 
 Pros:
+
 1. It's conceptually simple.
 2. It guarantees that things causally happen before, would not have larger time.
 3. It saves network bandwidth.
 
 Cons:
+
 1. We could not determine which job happens first by comparing the time. In otherword, if job j1 has smaller time than job j2, it could be either j1 is concurrent with j2 or j1 happens before j2. But we are not able to determine which one is correct.
 
 ## Vector Clock
