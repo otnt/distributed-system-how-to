@@ -1,7 +1,7 @@
 package clockService
 
 import (
-	utils "github.com/otnt/distributed-system-how-to/utils"
+	utils "github.com/otnt/distributed-system-notes/utils"
 )
 
 // Logical Clock is also called Lamport Clock. The concept of this type of clock is quite

@@ -2,7 +2,7 @@ package consistentHashing
 
 import (
 	rbt "github.com/emirpasic/gods/trees/redblacktree"
-	"github.com/otnt/distributed-system-how-to/node"
+	"github.com/otnt/distributed-system-notes/node"
 	"github.com/stretchr/testify/assert"
 	"sort"
 	"testing"

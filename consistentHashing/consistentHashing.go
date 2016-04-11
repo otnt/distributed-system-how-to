@@ -5,7 +5,7 @@ import (
 	//"fmt"
 	rbte "github.com/emirpasic/gods/examples"
 	rbt "github.com/emirpasic/gods/trees/redblacktree"
-	"github.com/otnt/distributed-system-how-to/node"
+	"github.com/otnt/distributed-system-notes/node"
 	"sync"
 )
 

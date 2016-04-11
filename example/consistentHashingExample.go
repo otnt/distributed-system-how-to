@@ -2,8 +2,8 @@ package main
 
 import (
 	"fmt"
-	ch "github.com/otnt/distributed-system-how-to/consistentHashing"
-	"github.com/otnt/distributed-system-how-to/node"
+	ch "github.com/otnt/distributed-system-notes/consistentHashing"
+	"github.com/otnt/distributed-system-notes/node"
 )
 
 func main() {
