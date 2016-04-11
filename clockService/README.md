@@ -26,7 +26,7 @@ One communication model is message passing model. So that machine $A$ talks with
 
 In message passing model, all jobs happend could be put to three categories.
 
-![Message Passing Model]( "Massage Passing Model")
+![Message Passing Model](https://raw.githubusercontent.com/otnt/distributed-system-notes/master/clockService/img/send_receive_event.png "Massage Passing Model")
 
 1. **Send**: Machine $A$ sends a message to machine $B$.
 2. **Receive**: Machine $A$ receives a message from machine $B$.
@@ -57,7 +57,7 @@ To be specific, each machine has counter initialized as zero. It acts as below:
 
 For example, in following image, even network between A and C is conjusted, so that message sent from A to C is delayed, C still knows A's message should be received before B's message.
 
-![logical_clock]( "Logical Clock")
+![logical_clock](https://raw.githubusercontent.com/otnt/distributed-system-notes/master/clockService/img/logical_clock.png "Logical Clock")
 
 #### Pros and Cons
 
