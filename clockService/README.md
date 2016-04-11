@@ -28,6 +28,8 @@ In message passing model, all jobs happend could be put to three categories.
 
 ![Message Passing Model](https://raw.githubusercontent.com/otnt/distributed-system-notes/master/clockService/img/send_receive_event.png "Massage Passing Model")
 
+<a href="url"><img src="https://raw.githubusercontent.com/otnt/distributed-system-notes/master/clockService/img/send_receive_event.png" align="left" width="400" alt="Message Passing Model"></a>
+
 1. **Send**: Machine $A$ sends a message to machine $B$.
 2. **Receive**: Machine $A$ receives a message from machine $B$.
 3. **Event**: Machine $A$ triggers an inner job to happen.
