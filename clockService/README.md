@@ -22,23 +22,23 @@ This article will be organized as following:
 
 Communication among distributed systems could not be synchronized. This is to say, though intra-machine communication (within a single machine) could be synchronized, all inter-machine communication (among multiple machines) are generally asynchronized. 
 
-One communication model is message passing model. So that machine $A$ talks with machine $B$ by sending and receiving information directly through network, not by sharing address space or other methods.
+One communication model is message passing model. So that machine A talks with machine B by sending and receiving information directly through network, not by sharing address space or other methods.
 
 In message passing model, all jobs happend could be put to three categories.
 
 <div><img src="https://raw.githubusercontent.com/otnt/distributed-system-notes/master/clockService/img/send_receive_event.png" align="right" width="400" alt="Message Passing Model"></div>
 
-1. **Send**: Machine $A$ sends a message to machine $B$.
-2. **Receive**: Machine $A$ receives a message from machine $B$.
-3. **Event**: Machine $A$ triggers an inner job to happen.
+1. **Send**: Machine A sends a message to machine B.
+2. **Receive**: Machine A receives a message from machine B.
+3. **Event**: Machine A triggers an inner job to happen.
 
-The last thing -- event -- could refer to many things, including user input, open a file, system reboot etc.
+The last job, i.e. event, could refer to many things, including user input, open a file, system reboot etc.
 
 ## Two important concepts
 
 Two fundamental concepts in distributed system clock service is *concurrent* and *happens before*. The interpretation is really straightforward.
 
-Let's say job $J_1$ has time $t_1$, and job $J_2$ has time $t_2$. Then $J_1$ is ***concurrent*** with $J_2$ if $t_1=t_2$. And $J_1$ ***happens before*** $J_2$ if $t_1<t_2$.
+Let's say job j1 has time t1, and job j2 has time t2. Then j1 is ***concurrent*** with j2 if t1 = t2. And j1 ***happens before*** j2 if t1 < t2.
 
 ## Logical Clock / Lamport Clock
 
@@ -67,7 +67,7 @@ Pros:
 3. It saves network bandwidth.
 
 Cons:
-1. We could not determine which job happens first by comparing the time. In otherword, if job $j_1$ has smaller time than job $j_2$, it could be either $j_1$ is concurrent with $j_2$ or $j_1$ happens before $j_2$. But we are not able to determine which one is correct.
+1. We could not determine which job happens first by comparing the time. In otherword, if job j1 has smaller time than job j2, it could be either j1 is concurrent with j2 or j1 happens before j2. But we are not able to determine which one is correct.
 
 ## Vector Clock
 
