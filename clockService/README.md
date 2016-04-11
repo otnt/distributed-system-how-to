@@ -16,7 +16,13 @@ We will talk about two basic clock systems: logical clock and vector clock. Logi
 
 This article will be organized as following:
 
-**First**, we introduce message passing model in distributed system. **Then**, two important concepts -- concurrent, happens before -- would be introduced. **Next**, we will introduce a conceptually simple clock service called Logical Clock/Lamport Clock, which is useful in most of systems despite of its simplicity. **Finally**, another type of clock service called Vector Clock is introduced. This is perhaps the most famous and widely used clock service in practice.
+**First**, we introduce message passing model in distributed system. 
+
+**Then**, two important concepts -- concurrent, happens before -- would be introduced. 
+
+**Next**, we will introduce a conceptually simple clock service called Logical Clock/Lamport Clock, which is useful in most of systems despite of its simplicity. 
+
+**Finally**, another type of clock service called Vector Clock is introduced. This is perhaps the most famous and widely used clock service in practice.
 
 ## Message Passing Model
 
@@ -26,7 +32,7 @@ One communication model is message passing model. So that machine A talks with m
 
 In message passing model, all jobs happend could be put to three categories.
 
-<div><img src="https://raw.githubusercontent.com/otnt/distributed-system-notes/master/clockService/img/send_receive_event.png" align="right" width="400" alt="Message Passing Model"></div>
+<img src="https://raw.githubusercontent.com/otnt/distributed-system-notes/master/clockService/img/send_receive_event.png" align="right" width="400" alt="Message Passing Model">
 
 1. **Send**: Machine A sends a message to machine B.
 2. **Receive**: Machine A receives a message from machine B.
@@ -51,13 +57,13 @@ Each machine uses a counter as clock locally. The counter indicates the sequence
 
 To be specific, each machine has counter initialized as zero. It acts as below:
 
+<img src="https://raw.githubusercontent.com/otnt/distributed-system-notes/master/clockService/img/logical_clock.png" align="right" width="400" alt="Logical Clock">
+
 1. **Send**: It attaches current time in the message, sends it, and then increment local time.
 2. **Receive**: It receive a message, updates local time to the time attached with the message if it's larger, and then increment local time.
 3. **Event**: It increment local time.
 
-For example, in following image, even network between A and C is conjusted, so that message sent from A to C is delayed, C still knows A's message should be received before B's message.
-
-![logical_clock](https://raw.githubusercontent.com/otnt/distributed-system-notes/master/clockService/img/logical_clock.png "Logical Clock")
+For example, in right image, even network between A and C is conjusted, so that message sent from A to C is delayed, C still knows A's message should be received before B's message.
 
 #### Pros and Cons
 
