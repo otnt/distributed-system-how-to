@@ -2,24 +2,23 @@ package consistentHashing
 
 import (
 	"errors"
-	//"fmt"
 	rbte "github.com/emirpasic/gods/examples"
 	rbt "github.com/emirpasic/gods/trees/redblacktree"
 	"github.com/otnt/distributed-system-notes/node"
 	"sync"
 )
 
-//The abstruct structure of consistent hash ring.
-//It consists of a Red-Black-Tree serve as the ring.
+// The abstruct structure of consistent hash ring.
+// It consists of a Red-Black-Tree serve as the ring.
 type Ring struct {
 	tree *rbte.RedBlackTreeExtended
 	mux  sync.Mutex
 }
 
-//Create a new consistent hashing ring with default
-//value setting.
+// Create a new consistent hashing ring with default
+// value setting.
 //
-//@return: pointer to new created consistent hashing ring
+// @return: pointer to new created consistent hashing ring
 func NewRing() (ring *Ring) {
 	ring = &Ring{
 		tree: &rbte.RedBlackTreeExtended{
@@ -29,11 +28,11 @@ func NewRing() (ring *Ring) {
 	return
 }
 
-//Add a new Node to consistent hashing ring.
-//This function block the running routine until the Node
-//is successfully added.
-//
-//@param node: Node to be added
+// Add a new Node to consistent hashing ring.
+// This function block the running routine until the Node
+// is successfully added.
+// 
+// @param node: Node to be added
 func (ring *Ring) AddSync(node *node.Node) {
 	ring.mux.Lock()
 	for _, key := range node.Keys {
@@ -44,11 +43,11 @@ func (ring *Ring) AddSync(node *node.Node) {
 	return
 }
 
-//Remove a new Node to consistent hashing ring.
-//This function block the running routine until the Node
-//is successfully removed.
-//
-//@param node: Node to be removed
+// Remove a new Node to consistent hashing ring.
+// This function block the running routine until the Node
+// is successfully removed.
+// 
+// @param node: Node to be removed
 func (ring *Ring) RemoveSync(node *node.Node) {
 	ring.mux.Lock()
 	for _, key := range node.Keys {
@@ -254,9 +253,9 @@ func AddOne(key string) string {
 	return string(newKey)
 }
 
-//Substract key by one, the key is usually a very large number, mixing
-//number & alphabetic letter. This method is used specifically for
-//substractign SHA1 result by 1
+// Substract key by one, the key is usually a very large number, mixing
+// number & alphabetic letter. This method is used specifically for
+// substractign SHA1 result by 1
 func SubOne(key string) string {
 	next := map[rune]rune{
 		'0': 'f',
