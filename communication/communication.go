@@ -4,7 +4,9 @@ import (
 	"github.com/otnt/distributed-system-notes/node"
 	"net"
 	"encoding/json"
-	"io"
+	"bufio"
+	"sync"
+	"time"
 )
 
 // communication protocol
@@ -13,8 +15,13 @@ const (
 	UDP
 )
 
+const (
+	DELIM = byte(0)
+)
+
 type Message struct {
 	SequenceId int64 //beginning from 0
+	LastSequenceId int64 //beginning from 0
 	Sender string //uuid
 	Receiver string //uuid
 	Kind int //message type
@@ -24,6 +31,8 @@ type Message struct {
 type Communication struct{
 	Protocol int
 	ProtocolName string
+	regMap *(map[int](chan *MsgConn))
+	regMapLock *(sync.Mutex)
 }
 
 func NewCommunication(protocol int) *Communication {
@@ -39,6 +48,71 @@ func NewCommunication(protocol int) *Communication {
 	return &Communication{Protocol:protocol, ProtocolName:protocolName}
 }
 
+type MsgConn struct {
+	Msg *Message
+	Conn net.Conn
+}
+
+func (comm *Communication) Init() {
+	l, err := net.Listen(comm.ProtocolName, ":80")
+	if err != nil {
+		panic("Could not listen on port")
+	}
+
+	comm.regMap = new((map[int](chan *MsgConn)))
+	comm.regMapLock = new(sync.Mutex)
+	regMap := comm.regMap
+	regMapLock := comm.regMapLock
+
+	go func() {
+		for {
+			conn, err :=l.Accept()
+			if err != nil {
+				continue
+			}
+
+			go func() {
+				data, _ := bufio.NewReader(conn).ReadBytes(DELIM)
+				data = data[:len(data)-1] //remove DELIM
+
+				var res = new(Message)
+				err = json.Unmarshal(data, res)
+				if err != nil {
+					return
+				}
+
+				kind := res.Kind
+				regMapLock.Lock()
+				if val, ok := (*regMap)[kind]; !ok {
+					(*regMap)[kind] = make(chan *MsgConn)
+					regMapLock.Unlock()
+				} else {
+					regMapLock.Unlock()
+					val <- &MsgConn{res, conn}
+				}
+			}()
+		}
+	}()
+
+	return
+}
+
+func (comm *Communication) ReceiveRegister(kind int) (rec chan<- *MsgConn, err error){
+	go func() {
+		var ok bool
+		for {
+			if rec,ok = (*comm.regMap)[kind]; ok {
+				break
+			} else {
+				<-time.After(time.Second * 5)
+			}
+		}
+
+	}()
+	err = nil
+	return
+}
+
 func (comm *Communication) Send(n *node.Node, msg *Message) error {
 	m, err := json.Marshal(msg)
 	if err != nil {
@@ -49,8 +123,9 @@ func (comm *Communication) Send(n *node.Node, msg *Message) error {
 	if err != nil {
 		return err
 	}
+	defer conn.Close()
 
-	num, err := conn.Write(m)
+	num, err := conn.Write(append(m,DELIM))
 	if err != nil || num != len(m) {
 		return err
 	}
@@ -68,25 +143,17 @@ func (comm *Communication) SendAndReceive(n *node.Node, msg *Message) (*Message,
 	if err != nil {
 		return nil, err
 	}
+	defer conn.Close()
 
-	num, err := conn.Write(m)
-	if err != nil || num != len(m) {
+	_, err = conn.Write(append(m,DELIM))
+	if err != nil  {
 		return nil, err
 	}
 
-	buf := make([]byte, 1024)
-	data := make([]byte, 1024)
-	for n:=1; n > 0; n, err = conn.Read(buf) {
-		if err != nil && err != io.EOF {
-			return nil, err
-		}
-		if err == io.EOF {
-			break
-		}
-		data = append(data, buf...)
-	}
+	data, _ := bufio.NewReader(conn).ReadBytes(DELIM)
+	data = data[:len(data)-1] //remove DELIM
 
-	var res *Message
+	var res = new(Message)
 	err = json.Unmarshal(data, res)
 	if err != nil {
 		return nil, err
