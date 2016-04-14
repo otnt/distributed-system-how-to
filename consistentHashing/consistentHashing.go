@@ -33,7 +33,7 @@ func NewRing() (ring *Ring) {
 // is successfully added.
 // 
 // @param node: Node to be added
-func (ring *Ring) AddSync(node *node.Node) {
+func (ring *Ring) AddNode(node *node.Node) {
 	ring.mux.Lock()
 	for _, key := range node.Keys {
 		ring.tree.Put(key, node)
@@ -48,7 +48,7 @@ func (ring *Ring) AddSync(node *node.Node) {
 // is successfully removed.
 // 
 // @param node: Node to be removed
-func (ring *Ring) RemoveSync(node *node.Node) {
+func (ring *Ring) RemoveNode(node *node.Node) {
 	ring.mux.Lock()
 	for _, key := range node.Keys {
 		ring.tree.Remove(key)

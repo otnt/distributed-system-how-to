@@ -1,7 +1,6 @@
 package communication
 
 import (
-	"github.com/otnt/distributed-system-notes/node"
 	"net"
 	"encoding/json"
 	"bufio"
@@ -18,6 +17,14 @@ const (
 const (
 	DELIM = byte(0)
 )
+
+const (
+	MEMBERSHIP = iota
+)
+
+type node interface {
+	Uuid() string
+}
 
 type Message struct {
 	SequenceId int64 //beginning from 0
@@ -113,13 +120,13 @@ func (comm *Communication) ReceiveRegister(kind int) (rec chan<- *MsgConn, err e
 	return
 }
 
-func (comm *Communication) Send(n *node.Node, msg *Message) error {
+func (comm *Communication) Send(n node, msg *Message) error {
 	m, err := json.Marshal(msg)
 	if err != nil {
 		panic("Error when marshaling data")
 	}
 
-	conn, err := net.Dial(comm.ProtocolName, n.Uuid)
+	conn, err := net.Dial(comm.ProtocolName, n.Uuid())
 	if err != nil {
 		return err
 	}
@@ -133,13 +140,13 @@ func (comm *Communication) Send(n *node.Node, msg *Message) error {
 	return nil
 }
 
-func (comm *Communication) SendAndReceive(n *node.Node, msg *Message) (*Message, error) {
+func (comm *Communication) SendAndReceive(n node, msg *Message) (*Message, error) {
 	m, err := json.Marshal(msg)
 	if err != nil {
 		panic("Error when marshaling data")
 	}
 
-	conn, err := net.Dial(comm.ProtocolName, n.Uuid)
+	conn, err := net.Dial(comm.ProtocolName, n.Uuid())
 	if err != nil {
 		return nil, err
 	}
@@ -162,4 +169,40 @@ func (comm *Communication) SendAndReceive(n *node.Node, msg *Message) (*Message,
 	return res, nil
 }
 
+func (comm *Communication) SendAndReceiveChannel(n node, msg *Message) (<-chan *Message) {
+	res := make(chan *Message)
 
+	go func() {
+		m, err := json.Marshal(msg)
+		if err != nil {
+			panic("Error when marshaling data")
+		}
+
+		conn, err := net.Dial(comm.ProtocolName, n.Uuid())
+		defer conn.Close()
+		if err != nil {
+			close(res)
+			return
+		}
+
+		_, err = conn.Write(append(m,DELIM))
+		if err != nil  {
+			close(res)
+			return
+		}
+
+		data, _ := bufio.NewReader(conn).ReadBytes(DELIM)
+		data = data[:len(data)-1] //remove DELIM
+
+		var resMsg = new(Message)
+		err = json.Unmarshal(data, resMsg)
+		if err != nil {
+			close(res)
+			return
+		}
+
+		res <- resMsg
+	}()
+
+	return (<-chan *Message)(res)
+}
